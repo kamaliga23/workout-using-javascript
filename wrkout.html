@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customized Workout and Food Plan Chatbot</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: violet; /* Changed background color to violet */
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .chatbot-container {
+            width: 400px;
+            background-color: white;
+            box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        #chatbox {
+            height: 400px;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .message {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 10px;
+            width: fit-content;
+        }
+
+        .bot-message {
+            background-color: #f0f0f0;
+            color: #333;
+            align-self: flex-start;
+        }
+
+        .user-message {
+            background-color: #007bff;
+            color: white;
+            align-self: flex-end;
+        }
+
+        input, button {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            outline: none;
+            font-size: 16px;
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="chatbot-container">
+        <div id="chatbox" class="chatbox">
+            <div class="message bot-message">
+                Hi! I'm your workout assistant. Let's get started! What's your name?
+            </div>
+        </div>
+        <input id="userInput" type="text" placeholder="Type a message..." onkeypress="handleUserInput(event)">
+        <button id="sendBtn">Send</button>
+    </div>
+
+    <script>
+        let step = 0;
+        let userInfo = {
+            name: '',
+            goal: '',
+            experience: '',
+            equipment: '',
+            wantsFoodPlan: false
+        };
+
+        const chatbox = document.getElementById('chatbox');
+        const userInput = document.getElementById('userInput');
+        const sendBtn = document.getElementById('sendBtn');
+
+        sendBtn.addEventListener('click', sendMessage);
+
+        function handleUserInput(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        function sendMessage() {
+            const message = userInput.value.trim();
+            if (message === '') return;
+
+            addMessage(message, 'user-message');
+            processResponse(message);
+            userInput.value = ''; // Clear input field
+        }
+
+        function addMessage(text, className) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message', className);
+            messageDiv.textContent = text;
+            chatbox.appendChild(messageDiv);
+            chatbox.scrollTop = chatbox.scrollHeight; // Scroll to the bottom
+        }
+
+        function processResponse(message) {
+            if (step === 0) {
+                userInfo.name = message;
+                addMessage(`Nice to meet you, ${userInfo.name}! What is your fitness goal? (e.g., weight loss, muscle gain, general fitness)`, 'bot-message');
+                step++;
+            } else if (step === 1) {
+                userInfo.goal = message.toLowerCase();
+                addMessage(`Great! How experienced are you with working out? (beginner, intermediate, advanced)`, 'bot-message');
+                step++;
+            } else if (step === 2) {
+                userInfo.experience = message.toLowerCase();
+                addMessage(`Good to know. What equipment do you have available? (e.g., dumbbells, resistance bands, bodyweight only)`, 'bot-message');
+                step++;
+            } else if (step === 3) {
+                userInfo.equipment = message.toLowerCase();
+                suggestWorkout();
+            } else if (step === 4) {
+                if (message.toLowerCase() === 'yes' || message.toLowerCase() === 'y') {
+                    userInfo.wantsFoodPlan = true;
+                    suggestFoodPlan();
+                } else {
+                    addMessage(`Alright! You can always ask for the meal plan later. Let me know if you need any further assistance with your workouts!`, 'bot-message');
+                }
+            }
+        }
+
+        function suggestWorkout() {
+            let workoutPlan = '';
+            
+            if (userInfo.goal.includes('weight loss')) {
+                workoutPlan = '30-minute HIIT cardio and full-body circuit training.';
+            } else if (userInfo.goal.includes('muscle gain')) {
+                workoutPlan = 'Weight training focusing on compound exercises like squats, deadlifts, and bench press.';
+            } else {
+                workoutPlan = 'A mix of strength training and light cardio for overall fitness.';
+            }
+
+            const equipmentNote = userInfo.equipment.includes('bodyweight') ? 'No equipment needed, bodyweight exercises will be included.' : `We'll include exercises using ${userInfo.equipment}.`;
+
+            addMessage(`Based on your goal of ${userInfo.goal} and your experience level as ${userInfo.experience}, here's a workout plan for you: ${workoutPlan} ${equipmentNote}`, 'bot-message');
+            addMessage('Would you like a customized food plan for the week to complement your workout? (yes/no)', 'bot-message');
+            step++;
+        }
+
+        function suggestFoodPlan() {
+            let foodPlan = '';
+
+            if (userInfo.goal.includes('weight loss')) {
+                foodPlan = `
+                Here's a 7-day meal plan for weight loss:
+                - Day 1: Breakfast: Oatmeal with berries | Lunch: Grilled chicken salad | Dinner: Steamed fish with veggies
+                - Day 2: Breakfast: Greek yogurt with nuts | Lunch: Turkey wrap | Dinner: Stir-fried tofu with broccoli
+                - Day 3: Breakfast: Smoothie with spinach and banana | Lunch: Quinoa salad | Dinner: Baked chicken with sweet potato
+                - Day 4: Breakfast: Avocado toast | Lunch: Grilled salmon with mixed greens | Dinner: Veggie soup with lentils
+                - Day 5: Breakfast: Scrambled eggs with spinach | Lunch: Tuna salad | Dinner: Grilled shrimp with zucchini
+                - Day 6: Breakfast: Whole grain toast with almond butter | Lunch: Chicken quinoa bowl | Dinner: Baked cod with vegetables
+                - Day 7: Breakfast: Smoothie bowl | Lunch: Chickpea salad | Dinner: Grilled turkey burger with salad
+                `;
+            } else if (userInfo.goal.includes('muscle gain')) {
+                foodPlan = `
+                Here's a 7-day meal plan for muscle gain:
+                - Day 1: Breakfast: Eggs with whole wheat toast | Lunch: Chicken and brown rice | Dinner: Salmon with quinoa
+                - Day 2: Breakfast: Protein shake with oats | Lunch: Turkey sandwich | Dinner: Beef stir-fry with vegetables
+                - Day 3: Breakfast: Greek yogurt with granola | Lunch: Chicken wrap | Dinner: Steak with sweet potatoes
+                - Day 4: Breakfast: Omelette with veggies | Lunch: Tuna pasta salad | Dinner: Grilled chicken with couscous
+                - Day 5: Breakfast: Smoothie with protein powder | Lunch: Beef tacos | Dinner: Salmon with wild rice
+                - Day 6: Breakfast: Scrambled eggs and avocado | Lunch: Chicken burrito bowl | Dinner: Grilled pork chops with veggies
+                - Day 7: Breakfast: Protein pancakes | Lunch: Turkey quinoa bowl | Dinner: Baked fish with mixed greens
+                `;
+            } else {
+                foodPlan = `
+                Here's a 7-day meal plan for general fitness:
+                - Day 1: Breakfast: Smoothie with oats | Lunch: Grilled chicken salad | Dinner: Baked salmon with veggies
+                - Day 2: Breakfast: Scrambled eggs with avocado | Lunch: Turkey sandwich | Dinner: Stir-fried tofu with quinoa
+                - Day 3: Breakfast: Greek yogurt with nuts | Lunch: Chicken quinoa bowl | Dinner: Baked fish with rice
+                - Day 4: Breakfast: Oatmeal with chia seeds | Lunch: Grilled chicken wrap | Dinner: Veggie stir-fry with lentils
+                - Day 5: Breakfast: Smoothie with spinach | Lunch: Tuna salad | Dinner: Grilled shrimp with couscous
+                - Day 6: Breakfast: Scrambled eggs with toast | Lunch: Chicken Caesar salad | Dinner: Grilled turkey with veggies
+                - Day 7: Breakfast: Avocado toast with eggs | Lunch: Quinoa salad | Dinner: Baked cod with broccoli
+                `;
+            }
+
+            addMessage(foodPlan, 'bot-message');
+        }
+    </script>
+</body>
+</html>
